@@ -1,0 +1,59 @@
+{
+  "name": "diadoc-nestjs",
+  "version": "0.1.0",
+  "description": "NestJS-ready TypeScript client for Diadoc API with full OpenAPI coverage.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "openapi/diadoc.openapi.json",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "download:openapi": "tsx scripts/download-openapi.ts",
+    "generate": "tsx scripts/generate-client.ts",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run lint && npm run typecheck && npm test && npm run build"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^10.0.0 || ^11.0.0",
+    "rxjs": "^7.8.0"
+  },
+  "dependencies": {
+    "undici": "^6.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/testing": "^11.0.0",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.0.0",
+    "openapi-typescript": "^7.0.0",
+    "prettier": "^3.0.0",
+    "reflect-metadata": "^0.2.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

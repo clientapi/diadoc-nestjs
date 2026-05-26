@@ -1,0 +1,32 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Fixture",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/Ping": {
+      "get": {
+        "tags": ["Документы"],
+        "operationId": "Ping",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PingResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

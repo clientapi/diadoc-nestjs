@@ -1,0 +1,1 @@
+export const DIADOC_MODULE_OPTIONS = Symbol('DIADOC_MODULE_OPTIONS');

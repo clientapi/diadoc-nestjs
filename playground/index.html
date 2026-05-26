@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Diadoc Playground</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <aside class="panel config-panel">
+        <div class="panel-header">
+          <h1>Diadoc Playground</h1>
+          <p>Локальная проверка реальных запросов</p>
+        </div>
+
+        <form id="configForm" class="stack">
+          <label>
+            API Client ID
+            <input id="apiClientId" name="apiClientId" autocomplete="off" />
+          </label>
+
+          <label>
+            Auth token
+            <input id="authToken" name="authToken" autocomplete="off" type="password" />
+          </label>
+
+          <label>
+            Auth scheme
+            <select id="authScheme">
+              <option value="diadocAuth">DiadocAuth</option>
+              <option value="bearer">Bearer</option>
+            </select>
+          </label>
+
+          <label>
+            Base URL
+            <select id="baseUrlPreset">
+              <option value="https://diadoc-api.kontur.ru">Production</option>
+              <option value="https://diadoc-api.testkontur.ru">Test Kontur</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+
+          <label>
+            Custom Base URL
+            <input id="baseUrl" name="baseUrl" autocomplete="off" />
+          </label>
+
+          <label>
+            Timeout, ms
+            <input id="timeoutMs" name="timeoutMs" inputmode="numeric" value="30000" />
+          </label>
+        </form>
+
+        <div id="envStatus" class="env-status">Проверяю локальный .env...</div>
+      </aside>
+
+      <section class="workspace">
+        <nav class="tabs" aria-label="Playground actions">
+          <button class="tab is-active" data-tab="auth">Авторизация</button>
+          <button class="tab" data-tab="connection">Подключение</button>
+          <button class="tab" data-tab="organizations">Организации</button>
+          <button class="tab" data-tab="counteragents">Контрагенты</button>
+          <button class="tab" data-tab="invite">Приглашение</button>
+          <button class="tab" data-tab="message">Документ</button>
+          <button class="tab" data-tab="raw">Raw</button>
+        </nav>
+
+        <section class="panel action-panel is-active" id="tab-auth">
+          <div class="section-header">
+            <h2>Авторизация</h2>
+          </div>
+
+          <section class="auth-block">
+            <h3>OpenID AuthorizationCode</h3>
+            <p class="hint">Рекомендуемый способ. В кабинете интегратора выберите AuthorizationCode и добавьте callback URL ниже.</p>
+            <div class="grid two">
+              <label>
+                OpenID clientId
+                <input id="oidcClientId" autocomplete="off" placeholder="ci_alpha-dev" />
+              </label>
+              <label>
+                OpenID clientSecret
+                <input id="oidcClientSecret" autocomplete="off" type="password" />
+              </label>
+            </div>
+            <label>
+              Scope
+              <select id="oidcScope">
+                <option value="openid profile email offline_access Diadoc.PublicAPI">Production: Diadoc.PublicAPI</option>
+                <option value="openid profile email offline_access Diadoc.PublicAPI.Staging">Test: Diadoc.PublicAPI.Staging</option>
+              </select>
+            </label>
+            <label>
+              Callback URL
+              <input id="oidcRedirectUri" autocomplete="off" readonly />
+            </label>
+            <button class="primary" data-action="startOidc">Открыть вход через Контур</button>
+          </section>
+
+          <section class="auth-block">
+            <h3>AuthenticateV3</h3>
+            <p class="hint">Устаревший способ по логину и паролю. Нужен `API Client ID` в левой панели.</p>
+            <div class="grid two">
+              <label>
+                Login
+                <input id="legacyLogin" autocomplete="username" />
+              </label>
+              <label>
+                Password
+                <input id="legacyPassword" autocomplete="current-password" type="password" />
+              </label>
+            </div>
+            <button class="primary" data-action="authenticatePassword">Получить DiadocAuth token</button>
+          </section>
+        </section>
+
+        <section class="panel action-panel" id="tab-connection">
+          <div class="section-header">
+            <h2>Проверить доступ</h2>
+          </div>
+          <p class="hint">Вызов `GetMyOrganizations` покажет, что токен и client id подходят.</p>
+          <button class="primary" data-action="checkConnection">Проверить подключение</button>
+        </section>
+
+        <section class="panel action-panel" id="tab-organizations">
+          <div class="section-header">
+            <h2>Организации</h2>
+            <button class="primary" data-action="loadOrganizations">Загрузить список</button>
+          </div>
+          <div class="grid two">
+            <label class="checkbox-label">
+              <input id="orgAutoRegister" type="checkbox" checked />
+              autoRegister
+            </label>
+            <label>
+              Фильтр
+              <input id="orgSearch" autocomplete="off" placeholder="Название, ИНН, КПП, boxId" />
+            </label>
+          </div>
+          <div id="orgSummary" class="env-status">Список еще не загружен</div>
+          <div class="table-wrap">
+            <table class="org-table">
+              <thead>
+                <tr>
+                  <th>Организация</th>
+                  <th>ИНН / КПП</th>
+                  <th>BoxId</th>
+                  <th>OrgId</th>
+                  <th>Статусы</th>
+                  <th>Права</th>
+                </tr>
+              </thead>
+              <tbody id="orgTableBody">
+                <tr>
+                  <td colspan="6" class="empty-cell">Нажмите “Загрузить список”</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel action-panel" id="tab-counteragents">
+          <div class="section-header">
+            <h2>Поиск контрагентов</h2>
+            <div class="button-row">
+              <button class="secondary" data-action="loadNextCounteragents">Следующая страница</button>
+              <button class="primary" data-action="loadCounteragents">Найти</button>
+            </div>
+          </div>
+          <div class="grid two">
+            <label>
+              MyBoxId
+              <input id="counteragentMyBoxId" autocomplete="off" placeholder="boxId своей организации" />
+            </label>
+            <label>
+              Поиск
+              <input id="counteragentQuery" autocomplete="off" placeholder="Название, полное имя или ИНН" />
+            </label>
+          </div>
+          <div class="grid three">
+            <label>
+              Статус
+              <select id="counteragentStatus">
+                <option value="">Все</option>
+                <option value="IsMyCounteragent">IsMyCounteragent</option>
+                <option value="InvitesMe">InvitesMe</option>
+                <option value="IsInvitedByMe">IsInvitedByMe</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </label>
+            <label>
+              Page size
+              <input id="counteragentPageSize" autocomplete="off" inputmode="numeric" value="100" />
+            </label>
+            <label>
+              AfterIndexKey
+              <input id="counteragentAfterIndexKey" autocomplete="off" />
+            </label>
+          </div>
+          <div id="counteragentSummary" class="env-status">Поиск еще не выполнялся</div>
+          <div class="table-wrap">
+            <table class="org-table">
+              <thead>
+                <tr>
+                  <th>Контрагент</th>
+                  <th>ИНН / КПП</th>
+                  <th>BoxId</th>
+                  <th>OrgId</th>
+                  <th>Статус</th>
+                  <th>IndexKey</th>
+                  <th>Комментарий</th>
+                </tr>
+              </thead>
+              <tbody id="counteragentTableBody">
+                <tr>
+                  <td colspan="7" class="empty-cell">Заполните MyBoxId и нажмите “Найти”</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel action-panel" id="tab-invite">
+          <div class="section-header">
+            <h2>Пригласить контрагента</h2>
+          </div>
+          <div class="grid two">
+            <label>
+              FromBoxId
+              <input id="inviteFromBoxId" autocomplete="off" />
+            </label>
+            <label>
+              ToBoxId
+              <input id="inviteToBoxId" autocomplete="off" />
+            </label>
+          </div>
+          <label>
+            Comment
+            <textarea id="inviteComment" rows="4"></textarea>
+          </label>
+          <button class="primary" data-action="invite">Отправить приглашение</button>
+        </section>
+
+        <section class="panel action-panel" id="tab-message">
+          <div class="section-header">
+            <h2>Отправить сообщение / документ</h2>
+          </div>
+          <p class="hint">Тело запроса передается как JSON в `PostMessageV3`.</p>
+          <label>
+            Request body
+            <textarea id="messageBody" class="code" rows="16"></textarea>
+          </label>
+          <button class="primary" data-action="sendMessage">Отправить PostMessageV3</button>
+        </section>
+
+        <section class="panel action-panel" id="tab-raw">
+          <div class="section-header">
+            <h2>Raw operation</h2>
+          </div>
+          <div class="grid two">
+            <label>
+              Operation
+              <select id="rawOperation"></select>
+            </label>
+            <label>
+              Response type
+              <select id="rawResponseType">
+                <option value="">Auto</option>
+                <option value="json">JSON</option>
+                <option value="text">Text</option>
+                <option value="arrayBuffer">ArrayBuffer</option>
+              </select>
+            </label>
+          </div>
+          <div class="grid three">
+            <label>
+              Path JSON
+              <textarea id="rawPath" class="code" rows="6">{}</textarea>
+            </label>
+            <label>
+              Query JSON
+              <textarea id="rawQuery" class="code" rows="6">{}</textarea>
+            </label>
+            <label>
+              Headers JSON
+              <textarea id="rawHeaders" class="code" rows="6">{}</textarea>
+            </label>
+          </div>
+          <label>
+            Body JSON
+            <textarea id="rawBody" class="code" rows="10">null</textarea>
+          </label>
+          <button class="primary" data-action="rawCall">Выполнить операцию</button>
+        </section>
+      </section>
+
+      <aside class="panel result-panel">
+        <div class="section-header compact">
+          <h2>Журнал</h2>
+          <button class="secondary" id="clearLog">Очистить</button>
+        </div>
+        <div id="statusLine" class="status-line">Готов к запросу</div>
+        <pre id="responseLog" class="response-log"></pre>
+      </aside>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
