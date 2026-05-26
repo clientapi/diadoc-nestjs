@@ -17,6 +17,7 @@ jobs:
   publish:
     name: Verify and publish package
     runs-on: ubuntu-latest
+    environment: NPM_TOKEN
 
     steps:
       - name: Checkout repository
