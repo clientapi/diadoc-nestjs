@@ -452,15 +452,6 @@ npm pack --dry-run
 - `openapi/diadoc.openapi.json`
 - `README.md`
 
-## Публикация
-
-Перед публикацией в npm или размещением на GitHub проверьте:
-
-1. `npm run verify` завершается без ошибок.
-2. `npm pack --dry-run` показывает ожидаемые файлы.
-3. В `package.json` указана корректная версия.
-4. В README нет секретов, тестовых токенов и приватных URL.
-5. `openapi/diadoc.openapi.json` соответствует версии API, которую вы хотите поддерживать.
 
 ## Ограничения
 
